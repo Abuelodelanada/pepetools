@@ -5,7 +5,7 @@
 #            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
 #                    Version 2, December 2004
 #
-# Copyright 2010 - gcoop - Cooperativa de Software Libre
+# Copyright 2012 - gcoop - Cooperativa de Software Libre
 # http://gcoop.coop
 # Everyone is permitted to copy and distribute verbatim or modified
 # copies of this license document, and changing it is allowed as long
@@ -30,7 +30,7 @@ import struct
 config={'192.168.10':'jose@malbec:/bacoop/jose', '192.168.0':'jose@reylagarto:/home/jose/backup_notebook/'}
 
 # Directorios a excluir con rsync
-exclude =('gcoop/*', '.ssh/*', '.gvfs/*', '.thunderbird/n3rmqyhh.default/ImapMail/*', '.mozilla/firefox/*/Cache/*', '.thunderbird/n3rmqyhh.default/Cache/*', '.macromedia/*', '.thunderbird/*/global-messages-db.sqlite-journal', '.local/share/Trash/*')
+exclude =('gcoop/*', '.ssh/*', '.gvfs/*', '.thunderbird/*/ImapMail/*', '.mozilla/firefox/*/Cache/*', '.thunderbird/*/Cache/*', '.macromedia/*', '.thunderbird/*/global-messages-db.sqlite-journal', '.local/share/Trash/*')
 
 # Mail a donde mandarme los errores al hacer backup
 direccion_mail = 'yo@midominio'
