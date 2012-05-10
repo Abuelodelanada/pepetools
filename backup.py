@@ -22,6 +22,7 @@
 import subprocess
 import pynotify
 import os
+import sys
 import socket
 import fcntl
 import struct
@@ -30,35 +31,13 @@ import struct
 config={'192.168.10':'jose@malbec:/bacoop/jose', '192.168.0':'jose@reylagarto:/home/jose/backup_notebook/'}
 
 # Directorios a excluir con rsync
-exclude =('gcoop/*', '.ssh/*', '.gvfs/*', '.thunderbird/*/ImapMail/*', '.mozilla/firefox/*/Cache/*', '.thunderbird/*/Cache/*', '.macromedia/*', '.thunderbird/*/global-messages-db.sqlite-journal', '.local/share/Trash/*')
+exclude =('gcoop/*', '.ssh/*', '.gvfs/*', '.thunderbird/*/ImapMail/*', '.mozilla/firefox/*/Cache/*', '.thunderbird/*/Cache/*', '.macromedia/*', '.thunderbird/*/global-messages-db.sqlite-journal', '.local/share/Trash/*', '.gvfs*')
 
 # Mail a donde mandarme los errores al hacer backup
 direccion_mail = 'yo@midominio'
 
 home = '/home/jose/'
-
-
-
-# Clase para crear y destruir un archivo lock que impide ejecutar el script si ya está en proceso.
-class TmpFile(object):
-    def __init__(self,name='/tmp/backup_notebook.lock'):
-        self.name = name
-
-
-    def create(self):
-    	try:
-            tmp = open(self.name,'r')
-            print "#"*80,"\n  El script está siendo ejecutado \n", "#"*80
-	    sys.exit(1)
-            raise SystemExit # el sys.exit no salia :|
-        except:
-            tmp = open(self.name,'w')
-            tmp.write('$$$.lock.$$$')
-            tmp.close()
-
-    def destroy(self):
-    	if os.path.isfile( self.name ):
-            os.unlink( self.name )
+lock_name =  '/tmp/backup_notebook.lock'
 
 
 # Clase que, básicamente, hace el backup :P
@@ -69,6 +48,7 @@ class Backup (object):
         self.direccion_mail = direccion_mail
         self.excludefile=excludefile
         self.creararchivo()
+        self.lock_name = lock_name
 
     def aviso(self, estado, donde, msg = ''):
             if estado == 'start':
@@ -113,8 +93,28 @@ class Backup (object):
             struct.pack('256s', ifname[:15])
         )[20:24])
 
+    def crear_lock(self):
+        host = self.buscar_host()
+        if (os.path.exists(self.lock_name)):
+            print "#"*80,"\n  El script está siendo ejecutado \n", "#"*80
+            self.aviso('error', host, 'El backup ya está siendo ejecutado')
+            sys.exit(1)
+            
+        else:
+            tmp = open(self.lock_name,'w')
+            tmp.write('$$$.lock.$$$')
+            tmp.close()
+
+    def destruir_lock(self):
+    	if os.path.isfile(self.lock_name):
+            os.unlink(self.lock_name)
+
+
     def hacer_backup(self):
         host = self.buscar_host()
+
+        self.crear_lock() # creo un archivo temporal en /tmp
+
         if host:
             print host
 
@@ -151,13 +151,10 @@ class Backup (object):
 
         else:
             print 'No reconocí host'
-                   
+        
+        self.destruir_lock()
 
 ## Inicio del Script.
-t = TmpFile() # creo un archivo temporal en /tmp
-t.create()    # si este existe, salgo inmediatamente, sino creo uno
 
 b = Backup()
 b.hacer_backup()
-
-t.destroy()
